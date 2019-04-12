@@ -70,14 +70,15 @@ nav.reflect = (loc, mapLen, isHorizontalReflection) => {
 
 nav.isHoReflect = (self) => {
     // self.log('starting reflect check');
-    const mapLen = self.map.length
-    var Plausible = true;
-    for (let y = 0; y < mapLen && Plausible; y++) {
-        for (let x = 0; x < mapLen && Plausible; x++) {
-            Plausible = self.map[y][x] === self.map[mapLen - y - 1][x]
-        }
-    }
-    return Plausible
+    // const mapLen = self.map.length
+    // var Plausible = true;
+    // for (let y = 0; y < mapLen && Plausible; y++) {
+    //     for (let x = 0; x < mapLen && Plausible; x++) {
+    //         Plausible = self.map[y][x] === self.map[mapLen - y - 1][x]
+    //     }
+    // }
+    // return Plausible
+    return true
 }
 
 nav.getDir = (start, target) => {
@@ -102,7 +103,7 @@ nav.getDir = (start, target) => {
 };
 
 nav.isPassable = (loc, fullMap, robotMap) => {
-    const { x, y } = loc;
+    const { x, y } = loc;   
     const mapLen = fullMap.length;
     if (x >= mapLen || x < 0) {
         return false;
