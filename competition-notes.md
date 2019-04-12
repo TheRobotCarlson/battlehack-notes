@@ -1,3 +1,18 @@
+## Bot components
+- bayesian enemy location inference
+    - calculate full map score
+    - generate candidates for enemy locations based on score shifts
+    - infer location based on changes round to round
+    - 
+- "best" counter move
+    - game theoretic (probability * val for move) best move (assuming we have enemy location)
+    - min-max tree
+- collaborating between units
+    - messaging for who is making each move
+    - message order based on queue
+- making new units
+
+
 ## General info
 - Map
     - 30x30 - 40x40 tiles

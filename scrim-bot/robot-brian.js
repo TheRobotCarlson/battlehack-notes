@@ -1,5 +1,6 @@
 import {BCAbstractRobot, SPECS} from 'battlecode';
 
+
 class MyRobot extends BCAbstractRobot {
 
     // state info
@@ -26,13 +27,23 @@ class MyRobot extends BCAbstractRobot {
     // map = this.map
     turn() {
 
+        var map = this.map;
+        var robotMap = this.getVisibleRobotMap();
+        // var mapLen = this.n;
+
         if (this.me.unit === SPECS.VOYAGER) {
-            const moved = false;         
+            var moved = false;
+            var choice = null;
             const choices = [[0,-1], [1, 0], [0, 1], [-1, 0]];
+            var my_coord = [this.me.r, this.me.c];
+
             while(!moved){
                 choice = choices[Math.floor(Math.random()*choices.length)];
-                if(this.map[this.me.c + choice[0]][this.me.r + choice[1]]){
+                var new_coord = [my_coord[0] + choice[0], my_coord[0] + choice[1]];
+                
+                if(this.isPassable(new_coord, map, robotMap, this.n)){
                     moved = true;
+                    this.log(choice);
                 }
             }
 
@@ -40,22 +51,75 @@ class MyRobot extends BCAbstractRobot {
         }
 
         else if (this.me.unit === SPECS.PLANET) {
-            const moved = false; 
+            var moved = false; 
             const choices = [[0,-1], [1, 0], [0, 1], [-1, 0]];
+            var choice = null;
 
             if (this.orbs >= 65536) {
                 while(!moved){
                     choice = choices[Math.floor(Math.random()*choices.length)];
-                    if(this.map[this.me.c + choice[0]][this.me.r + choice[1]]){
+                    var new_coord = [this.me.r + choice[0], this.me.c + choice[1]]
+
+                    if(this.isPassable(new_coord, map, robotMap, this.n)){
                         moved = true;
+                        this.log(choice);
                     }
                 }
 
                 return this.buildUnit(choice[0], choice[1]);
             }
         }
-
     }
+    
+    isPassable(loc, fullMap, robotMap, mapLen){
+        this.log('loc ' + loc)
+
+        var x = loc[0];
+        var y = loc[1];
+        this.log('location ' + x + ' ' + y)
+        this.log('map ' + fullMap[x][y])
+        this.log('robot map ' + robotMap[x][y])
+        
+        if (x >= mapLen || x < 0) {
+            return false;
+        } else if (y >= mapLen || y < 0) {
+            return false;
+        } else if (robotMap[x][y] > 0 || !fullMap[x][y]) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    maxCostPath(cost, n, loc, endGoal){ 
+        var i = 0, j = 0; 
+
+        // Instead of following line, we can use int tc[m+1][n+1] or  
+        // dynamically allocate memory to save space. The following line is 
+        // used to keep the program simple and make it working on all compilers. 
+        let tc = new Array(n).fill(null).map(item =>(new Array(n).fill(null)))   
+
+        tc[0][0] = cost[0][0]; 
+
+        /* Initialize first column of total cost(tc) array */
+        for (i = 1; i <= n; i++){ 
+            tc[i][0] = tc[i-1][0] + cost[i][0];
+        } 
+
+        /* Initialize first row of tc array */
+        for (j = 1; j <= n; j++){
+            tc[0][j] = tc[0][j-1] + cost[0][j]; 
+        }
+
+        /* Construct rest of the tc array */
+        for (i = 1; i <= n; i++){
+            for (j = 1; j <= n; j++) {
+                tc[i][j] = min(tc[i-1][j-1], tc[i-1][j], tc[i][j-1]) + cost[i][j]; 
+            }
+        }
+        this.log(tc);
+        return tc[n][n]; 
+    } 
 }
 
 var robot = new MyRobot();
