@@ -1,16 +1,26 @@
 ## Bot components
+- python testing framework
+    - generate map
+    - place "enemy units"
+    - calculate score for each
+
 - bayesian enemy location inference
     - calculate full map score
     - generate candidates for enemy locations based on score shifts
     - infer location based on changes round to round
-    - 
+
 - "best" counter move
     - game theoretic (probability * val for move) best move (assuming we have enemy location)
     - min-max tree
+
 - collaborating between units
     - messaging for who is making each move
     - message order based on queue
+
 - making new units
+    - when we're enough ahead
+
+- keeping track of enemy score and possible # of voyagers
 
 
 ## General info
