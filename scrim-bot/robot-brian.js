@@ -147,6 +147,37 @@ class MyRobot extends BCAbstractRobot {
         this.gridSize = 3; // square grid size
         this.regions = []
     }
+
+    findShortestPathInc(map, start, end){
+        var grid = [];
+        for (var i=0; i < this.n; i++) {
+            grid[i] = [];
+            for (var j=0; j < this.n; j++) {
+                if(map[i][j]){
+                    grid[i][j] = 'Empty';
+                } else{
+                    grid[i][j] = 'Obstacle';
+                }
+            }
+        }
+        
+        grid[start[0]][start[1]] = "Start";
+        grid[end[0]][end[1]] = "Goal";
+
+        var moves_temp = findShortestPath(my_coord, grid);
+        var moves = [];
+
+        for(var i = 0; i < moves_temp.length; i++){
+            switch(moves_temp[i]){
+                case 'South': moves.push([-1, 0]); break;
+                case 'North': moves.push([1, 0]); break;
+                case 'West': moves.push([0, 1]); break;
+                case 'East': moves.push([0, -1]); break;
+            }
+        }
+
+        return moves[0];
+    }
     // state info
     // this.me // a robot object 
     // this.me.turn // round count
@@ -211,11 +242,20 @@ class MyRobot extends BCAbstractRobot {
                 base_x_coord = my_planet.signal & 255;
     
                 if(this.isHoReflect){
-                    this.enemyPlanet.push(-1 * base_y_coord);
+                    if(base_y_coord < this.n / 2){
+                        this.enemyPlanet.push(this.n - base_y_coord - 1);
+                    } else{
+                        this.enemyPlanet.push(this.n - base_y_coord - 1);
+                    }
                     this.enemyPlanet.push(base_x_coord);                
                 } else {
                     this.enemyPlanet.push(base_y_coord);
-                    this.enemyPlanet.push(-1 * base_x_coord);    
+
+                    if(base_x_coord < this.n / 2){
+                        this.enemyPlanet.push(this.n - base_x_coord - 1);
+                    } else{
+                        this.enemyPlanet.push(this.n - base_x_coord - 1);
+                    }                
                 }
                 
                 for(var i=0; i<this.n; i += this.gridSize){
@@ -245,60 +285,52 @@ class MyRobot extends BCAbstractRobot {
 
             if(!planetSentry || this.planetHunt){ // we're going planet hunting
                 this.planetHunt = true;
-                var grid = [];
-                for (var i=0; i < this.n; i++) {
-                    grid[i] = [];
-                    for (var j=0; j < this.n; j++) {
-                        if(map[i][j]){
-                            grid[i][j] = 'Empty';
-                        } else{
-                            grid[i][j] = 'Obstacle';
-                        }
-                    }
-                }
-                
-                grid[my_coord[0]][my_coord[1]] = "Start";
-                grid[this.enemyPlanet[0]][this.enemyPlanet[1]] = "Goal";
-
-                var moves_temp = findShortestPath(my_coord, grid);
-                var moves = [];
-
-                for(var i = 0; i < moves_temp.length; i++){
-                    switch(moves_temp[i]){
-                        case 'South': moves.push([-1, 0]); break;
-                        case 'North': moves.push([1, 0]); break;
-                        case 'West': moves.push([0, 1]); break;
-                        case 'East': moves.push([0, -1]); break;
-                    }
-                }
-                this.log('id: ' + this.me.id + ' moving ' + this.moves[0] + ' planet hunting');
+                var move = findShortestPathInc(map, my_coord, this.enemyPlanet);
+                this.log('id: ' + this.me.id + ' moving ' + move + ' planet hunting');
                 this.signal(1); // planet hunting
 
-                return this.move(moves[0][0], moves[0][1]);
+                return this.move(move[0], move[1]);
             }
 
             this.planetHunt = false;
             
+            var temp_regions = [];
             // visible enemy?
 
+            for(var i=0;i<signals.length;i++){
+                signal = signals[i];
+                if(signal & 3 == 3){ // hunting enemy
+                    if(signal >> 2 == my_enemy){
+                        // do something else
+                    }else{
+                        // pursue
+                        var push_val = (my_enemy << 2) | 3;
+                        this.signal(push_val)
+                    }
+                }else if(signal & 3 == 2){
+                    temp_regions.push(signal>>2);
+                }
+            }
+
+            for(var i=0;i<this.regions.length;i++){ // go in order, finding the first one not included
+                if(!temp_regions.includes(i)){
+                    var push_val = (i << 2) | 2;
+                    this.signal(push_val); // high region hunting
+                    var move = findShortestPathInc(map, my_coord, this.regions[i][1]);
+                    this.log('id: ' + this.me.id + ' moving ' + move + ' region ' + i);
+
+                    return this.move(move[0], move[1]);
+                }
+            }
+
             // head towards unclaimed high value region
-            this.regions
+
             
 
             var moved = false;
             var choice = null;
             const choices = [[0,-1], [1, 0], [0, 1], [-1, 0]];
-
-            for(var i=0;i<choices.length;i++){
-                var temp = choices[i];
-                if(robotMap[my_coord[0] + temp[0]][my_coord[1] + temp[1]] > 0){
-                    robot_id = robotMap[my_coord[0] + temp[0]][my_coord[1] + temp[1]]
-
-                    if(this.getRobot(robot_id).team != this.me.team){
-                        
-                    }
-                }
-            }
+            
             while(!moved){
                 choice = choices[Math.floor(Math.random()*choices.length)];
                 var new_coord = [my_coord[0] + choice[0], my_coord[0] + choice[1]];
