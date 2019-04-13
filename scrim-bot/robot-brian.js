@@ -2,7 +2,15 @@ import {BCAbstractRobot, SPECS} from 'battlecode';
 
 
 class MyRobot extends BCAbstractRobot {
-
+    constructor() {
+        super();
+        this.pendingRecievedMessages = {};
+        this.enemyPlanet = None;
+        
+        this.voyagersBuilt = 0;
+        this.isHoReflect = None;
+        this.mapLen = -1
+    }
     // state info
     // this.me // a robot object 
     // this.me.turn // round count
@@ -26,16 +34,19 @@ class MyRobot extends BCAbstractRobot {
     // orb_map = this.orbs_map
     // map = this.map
     turn() {
-
+        
         var map = this.map;
         var robotMap = this.getVisibleRobotMap();
         // var mapLen = this.n;
+        var my_coord = [this.me.r, this.me.c];
 
         if (this.me.unit === SPECS.VOYAGER) {
+             y_shift = my_coord[0] << 8;
+            this.me.signal = y_shift | x_shift;
+
             var moved = false;
             var choice = null;
             const choices = [[0,-1], [1, 0], [0, 1], [-1, 0]];
-            var my_coord = [this.me.r, this.me.c];
 
             while(!moved){
                 choice = choices[Math.floor(Math.random()*choices.length)];
@@ -52,22 +63,10 @@ class MyRobot extends BCAbstractRobot {
 
         else if (this.me.unit === SPECS.PLANET) {
             var moved = false; 
-            const choices = [[0,-1], [1, 0], [0, 1], [-1, 0]];
             var choice = null;
+            var y_shift = my_coord[0] << 8;
+            this.me.signal = y_shift | x_shift;
 
-            if (this.orbs >= 65536) {
-                while(!moved){
-                    choice = choices[Math.floor(Math.random()*choices.length)];
-                    var new_coord = [this.me.r + choice[0], this.me.c + choice[1]]
-
-                    if(this.isPassable(new_coord, map, robotMap, this.n)){
-                        moved = true;
-                        this.log(choice);
-                    }
-                }
-
-                return this.buildUnit(choice[0], choice[1]);
-            }
         }
     }
     
@@ -91,35 +90,6 @@ class MyRobot extends BCAbstractRobot {
         }
     }
 
-    maxCostPath(cost, n, loc, endGoal){ 
-        var i = 0, j = 0; 
-
-        // Instead of following line, we can use int tc[m+1][n+1] or  
-        // dynamically allocate memory to save space. The following line is 
-        // used to keep the program simple and make it working on all compilers. 
-        let tc = new Array(n).fill(null).map(item =>(new Array(n).fill(null)))   
-
-        tc[0][0] = cost[0][0]; 
-
-        /* Initialize first column of total cost(tc) array */
-        for (i = 1; i <= n; i++){ 
-            tc[i][0] = tc[i-1][0] + cost[i][0];
-        } 
-
-        /* Initialize first row of tc array */
-        for (j = 1; j <= n; j++){
-            tc[0][j] = tc[0][j-1] + cost[0][j]; 
-        }
-
-        /* Construct rest of the tc array */
-        for (i = 1; i <= n; i++){
-            for (j = 1; j <= n; j++) {
-                tc[i][j] = min(tc[i-1][j-1], tc[i-1][j], tc[i][j-1]) + cost[i][j]; 
-            }
-        }
-        this.log(tc);
-        return tc[n][n]; 
-    } 
 }
 
 var robot = new MyRobot();

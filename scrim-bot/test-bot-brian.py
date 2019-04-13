@@ -120,18 +120,23 @@ def distance(point_a, point_b):
 
 def calc_scores(robot_map, orb_map, id_to_loc, map_size):
 
-    orbs = [j for sub in orb_map for j in sub]
-    robots = [j if j > 0 for sub in robot_map for j in sub]
-
+    orbs = []
+    robots = []
+    for i in range(map_size):
+        for j in range(map_size):
+            orbs.append([[i, j], orb_map[i][j]])
+            robots.append([[i, j], robot_map[i][j]])
     
-    for orb in orb_map:
+    for orb in orbs:
         orb.assignment = None
-        tempdist = distance()
+
         for robot in robots:
-
+            tempdist = distance(orb[0], robot[0])
+            
+            if(orb.assignment == None or tempdist < distance(orb[0], orb.assignment[0])):
+                orb.assignment = robot
     
-    # for y, x, team in id_to_loc.items():
-
+    
 
 if __name__ == "__main__":
     map_size = 10
